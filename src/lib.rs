@@ -5,13 +5,15 @@ pub mod BTL {
   use self::entities::Combatant;
   mod cmd {
     pub enum Command {
+      Attack,
       List,
     }
 
     impl Command {
-      pub fn invoke(&self, system: &super::BattleSystem) {
+      pub fn invoke(&self, system: &mut super::BattleSystem, values: Box<Vec<&str>>) {
         match *self {
           Command::List => { system.list_combatants() },
+          Command::Attack => { system.attack_combatant(values[1]); Command::List.invoke(system, Box::new(vec![])); },
         }
       }
     }
@@ -39,13 +41,36 @@ pub mod BTL {
     pub fn commands() -> HashMap<String, Command> {
       let mut map: HashMap<String, Command> = HashMap::new();
       map.insert("list".to_string(), Command::List);
+      map.insert("attack".to_string(), Command::Attack);
       map
     }
 
-    pub fn exec_command(&self, command: String) {
+    pub fn attack_combatant(&mut self, combatant: &str) {
+      let num: Option<usize> = combatant.parse::<usize>();
+      let i = num.unwrap();
+      if num == None || (i - 1) < 0 || (i - 1) >= self.combatants.len() {
+        println!("Invalid target");
+      }
+      else {
+        let (player_set, enemies) = self.combatants.split_at_mut(1);
+        if (i == 1) {
+          let player = &mut player_set[0];
+          player.health -= player.damage;
+        }
+        else {
+          let player = &player_set[0];
+          let enemy = &mut enemies[i - 2];
+          enemy.health -= player.damage;
+        }
+      }
+    }
+
+    pub fn exec_command(&mut self, command: String) {
+      let split = command.split_str(" ");
+      let values : Vec<&str> = split.collect();
       let commands = BattleSystem::commands();
-      match commands.get(&command) {
-        Some(ref cmd) => { cmd.invoke(self) },
+      match commands.get(&values[0].to_string()) {
+        Some(ref cmd) => { cmd.invoke(self, Box::new(values)) },
         _ => println!("No command found")
       }
     }
