@@ -1,12 +1,11 @@
 extern crate battlesystem;
 
 fn main() {
-  let battle_system = battlesystem::BTL::BattleSystem { targets: vec![1, 2] };
-  let player_one_id = 1;
-
-  println!("Enter command");
+  let mut battle_system = battlesystem::BTL::BattleSystem { combatants: vec![] };
+  battle_system.generate_combatants(2);
 
   loop {
+    println!("Enter command");
     let raw = std::io::stdin().read_line().ok().expect("Failed to read line");
     let input = raw.trim();
 
