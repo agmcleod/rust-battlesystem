@@ -1,7 +1,7 @@
 extern crate battlesystem;
 
 fn main() {
-  let battle_system = battlesystem::BattleSystem { targets: vec![1, 2] };
+  let battle_system = battlesystem::BTL::BattleSystem { targets: vec![1, 2] };
   let player_one_id = 1;
 
   println!("Enter command");
@@ -14,7 +14,7 @@ fn main() {
       break;
     }
     else {
-      battle_system.exec_command(input);
+      battle_system.exec_command(input.to_string());
     }
   }
 }
