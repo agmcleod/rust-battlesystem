@@ -13,7 +13,7 @@ pub mod BTL {
       pub fn invoke(&self, system: &mut super::BattleSystem, values: Box<Vec<&str>>) {
         match *self {
           Command::List => { system.list_combatants() },
-          Command::Attack => { system.attack_combatant(values[1]); Command::List.invoke(system, Box::new(vec![])); },
+          Command::Attack => { system.attack_combatant(values); Command::List.invoke(system, Box::new(vec![])); },
         }
       }
     }
@@ -45,11 +45,16 @@ pub mod BTL {
       map
     }
 
-    pub fn attack_combatant(&mut self, combatant: &str) {
+    pub fn attack_combatant(&mut self, arguments: Box<Vec<&str>>) {
+      if (arguments.len() < 2) {
+        println!("Must specify a target");
+        return;
+      }
+      let combatant = arguments[0];
       let num: Option<usize> = combatant.parse::<usize>();
       let i = num.unwrap();
       if num == None || (i - 1) < 0 || (i - 1) >= self.combatants.len() {
-        println!("Invalid target");
+        println!("Invalid target. Pass corresponding number:");
       }
       else {
         let (player_set, enemies) = self.combatants.split_at_mut(1);
