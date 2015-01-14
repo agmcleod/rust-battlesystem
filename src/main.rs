@@ -2,7 +2,7 @@ extern crate battlesystem;
 
 fn main() {
   let mut battle_system = battlesystem::BTL::BattleSystem { combatants: vec![] };
-  battle_system.generate_combatants(2);
+  battle_system.generate_combatants(3);
 
   loop {
     println!("Enter command");
@@ -14,6 +14,11 @@ fn main() {
     }
     else {
       battle_system.exec_command(input.to_string());
+      let combatants = &battle_system.combatants;
+      if combatants[0].health <= 0 {
+        println!("You have died.");
+        break;
+      }
     }
   }
 }

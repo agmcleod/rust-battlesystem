@@ -13,7 +13,12 @@ pub mod BTL {
       pub fn invoke(&self, system: &mut super::BattleSystem, values: Box<Vec<&str>>) {
         match *self {
           Command::List => { system.list_combatants() },
-          Command::Attack => { system.attack_combatant(values); Command::List.invoke(system, Box::new(vec![])); },
+          Command::Attack => {
+            system.attack_combatant(values);
+            system.invoke_ai();
+            println!("After AI:");
+            Command::List.invoke(system, Box::new(vec![]));
+          },
         }
       }
     }
@@ -50,7 +55,7 @@ pub mod BTL {
         println!("Must specify a target");
         return;
       }
-      let combatant = arguments[0];
+      let combatant = arguments[1];
       let num: Option<usize> = combatant.parse::<usize>();
       let i = num.unwrap();
       if num == None || (i - 1) < 0 || (i - 1) >= self.combatants.len() {
@@ -92,6 +97,16 @@ pub mod BTL {
           let health = (rand::random::<isize>() % 4) + 5;
           let dmg = (rand::random::<isize>() % 2) + 3;
           self.combatants.push(Combatant{ health: health, damage: dmg });
+        }
+      }
+    }
+
+    pub fn invoke_ai(&mut self) {
+      let (player_set, enemies) = self.combatants.split_at_mut(1);
+      let player = &mut player_set[0];
+      for enemy in enemies.iter() {
+        if (enemy.health > 0) {
+          player.health -= enemy.damage;
         }
       }
     }
