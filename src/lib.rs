@@ -3,10 +3,12 @@ pub mod BTL {
   use std::rand;
   use self::cmd::Command;
   use self::entities::Combatant;
+  use std::num::ParseIntError;
   mod cmd {
     pub enum Command {
       Attack,
       List,
+      Help,
     }
 
     impl Command {
@@ -18,6 +20,11 @@ pub mod BTL {
             system.invoke_ai();
             println!("After AI:");
             Command::List.invoke(system, Box::new(vec![]));
+          },
+          Command::Help => {
+            println!("\nhelp - this command. Lists available commands");
+            println!("list - lists the targets");
+            println!("attack target_number - attacks the target specified by the number.\n");
           },
         }
       }
@@ -47,6 +54,7 @@ pub mod BTL {
       let mut map: HashMap<String, Command> = HashMap::new();
       map.insert("list".to_string(), Command::List);
       map.insert("attack".to_string(), Command::Attack);
+      map.insert("help".to_string(), Command::Help);
       map
     }
 
@@ -56,22 +64,28 @@ pub mod BTL {
         return;
       }
       let combatant = arguments[1];
-      let num: Option<usize> = combatant.parse::<usize>();
-      let i = num.unwrap();
-      if num == None || (i - 1) < 0 || (i - 1) >= self.combatants.len() {
+      let num: Result<usize, ParseIntError> = combatant.parse::<usize>();
+      let i = num.ok().unwrap();
+      let mut remove = false;
+      if (i - 1) < 0 || (i - 1) >= self.combatants.len() {
         println!("Invalid target. Pass corresponding number:");
       }
       else {
-        let (player_set, enemies) = self.combatants.split_at_mut(1);
-        if (i == 1) {
-          let player = &mut player_set[0];
-          player.health -= player.damage;
+        let damage: isize;
+        {
+          let player = &self.combatants[0];
+          damage = player.damage;
+        };
+
+        let target = &mut self.combatants[i - 1];
+        target.health -= damage;
+        if target.health <= 0 && i > 0 {
+          remove = true;
         }
-        else {
-          let player = &player_set[0];
-          let enemy = &mut enemies[i - 2];
-          enemy.health -= player.damage;
-        }
+      }
+
+      if remove {
+        self.combatants.remove(i - 1);
       }
     }
 
@@ -105,7 +119,7 @@ pub mod BTL {
       let (player_set, enemies) = self.combatants.split_at_mut(1);
       let player = &mut player_set[0];
       for enemy in enemies.iter() {
-        if (enemy.health > 0) {
+        if enemy.health > 0 {
           player.health -= enemy.damage;
         }
       }
