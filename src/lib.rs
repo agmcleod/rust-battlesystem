@@ -4,6 +4,7 @@ pub mod BTL {
   use self::cmd::Command;
   use self::entities::Combatant;
   use std::num::ParseIntError;
+  use std::fmt;
   mod cmd {
     pub enum Command {
       Attack,
@@ -32,16 +33,9 @@ pub mod BTL {
   }
 
   mod entities {
-    use std::fmt::{Formatter, Result, String};
     pub struct Combatant {
       pub health: isize,
       pub damage: isize,
-    }
-
-    impl String for Combatant {
-      fn fmt(&self, formatter: &mut Formatter) -> Result {
-        write!(formatter, "heath: {} damage: {}", self.health, self.damage)
-      }
     }
   }
 
@@ -135,7 +129,7 @@ pub mod BTL {
         else {
           label = "Combatant";
         }
-        println!("({}) {}: {}", i + 1, label, c);
+        println!("({}) {}: {}", i + 1, label, format_args!("health: {} damage: {}", c.health, c.damage));
         i += 1;
       }
     }
